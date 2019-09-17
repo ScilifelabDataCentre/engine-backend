@@ -1,5 +1,5 @@
 {
-  "uuid": "43a3fdd1-8535-42e0-81a7-5edbff296e65",
-  "name": "Common DSW Template",
-  "rootFile": "root.html.j2"
+  "uuid": "8c964102-8d12-11e9-868b-9cb6d088be41",
+  "name": "SciLifeLab Minimal",
+  "rootFile": "scilife_minimal.html.j2"
 }
