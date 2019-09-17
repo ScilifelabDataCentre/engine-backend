@@ -15,24 +15,24 @@
 {% macro renderHeader() -%}
   <header>
     <h1>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 204 153"><path d="M151,113.37,137.24,89.08l-24.67-7.25,19-2.76L113.81,47.7,95.94,37.89l17.18,2.85,37.53,5.7L94.59,1.33c-2.76-2.67-6.88-1.47-8.32,2.44l-14.4,55,20,3.36L69.71,67,57.32,114.31l36.85,5.2-41.56,6.63L.66,152.1s34.15-1.54,45.76-3.16c44-6.14,76.34-6.76,120.36-13.54,7.71-1.19,37.56-20.62,37.56-20.62Z" style="fill:#333"/></svg>
       <div class="headline">
-        <span class="questionnaire-name">{{dmp.questionnaireName}}</span><br>
         <span class="km-name">{{km.name}}</span>
       </div>
+
+      <img src="https://swefreq-dev.nbis.se/static/img/SLL_logo.png?v=20190523130455.697232"/>
     </h1>
     <dl>
-      <dt>Organization</dt>
-      <dd>{{dmp.organization.name}}</dd>
+      {# <dt>Organization</dt>
+      <dd>{{dmp.organization.name}}</dd> #}
       {% if dmp.createdBy %}
         <dt>Created by</dt>
         <dd>{{dmp.createdBy.name}} {{dmp.createdBy.surname}} (<a href="mailto:{{dmp.user.email}}">{{dmp.createdBy.email}}</a>)</dd>
       {% endif %}
       <dt>Based on</dt>
-      <dd>{{dmp.package.name}}, {{dmp.package.version}} (<span class="package-id"><span class="organization-id">{{dmp.package.organizationId}}</span>:<span class="km-id">{{dmp.package.kmId}}</span>:<span class="version">{{dmp.package.version}}</span></span>)</dd>
+      <dd>{{dmp.package.name}}, {{dmp.package.version}}</dd>
       {% if dmp.config.levelsEnabled %}
-      <dt>Project Phase</dt>
-      <dd>{{renderCurrentLevel()}}</dd>
+      {# <dt>Project Phase</dt>
+      <dd>{{renderCurrentLevel()}}</dd> #}
       {% endif %}
       <dt>Created at</dt>
       <dd>{{dateformat(replace(dmp.createdAt, slice(dmp.createdAt,19), "Z"), "%d.%m.%Y")}}</dd>
@@ -68,8 +68,8 @@
 {% macro renderReport(chapterUuid) -%}
   <section class="report">
     <h3 class="title">Report</h3>
-    {{renderIndications(chapterUuid)}}
-    {{renderMetrics(chapterUuid)}}
+    {# {{renderIndications(chapterUuid)}} #}
+    {# {{renderMetrics(chapterUuid)}} #}
   </section>
 {%- endmacro -%}
 
@@ -158,9 +158,11 @@
 {% macro renderChapters() -%}
   {% set humanIdentifier = 1 %}
   {% for chapterUuid in km.chapterUuids %}
-    {{ renderChapter(humanIdentifier, km.entities.chapters[chapterUuid]) }}
-    {% set humanIdentifier = humanIdentifier + 1 %}
-    {# TODO: humanIdentifier for chapter in roman numerals #}
+    {% if km.entities.chapters[chapterUuid].title != "Support from Data Centre" %}
+      {{renderChapter(humanIdentifier, km.entities.chapters[chapterUuid])}}
+      {% set humanIdentifier = humanIdentifier + 1 %}
+      {# TODO: humanIdentifier for chapter in roman numerals #}
+    {% endif %}
   {% else %}
     No chapters
   {% endfor %}
@@ -170,7 +172,7 @@
   <section class="chapter" id="{{chapter.uuid}}" data-uuid="{{chapter.uuid}}" data-type="chapter">
     <h2 class="title">{{humanIdentifier|roman}}. {{chapter.title}}</h2>
     <p class="text-light">{{chapter.text|markdown}}</p>
-    {{renderReport(chapter.uuid)}}
+    {# {{renderReport(chapter.uuid)}} #}
     {{renderQuestions(chapter.questionUuids, chapter.uuid)}}
   </section>
 {%- endmacro -%}
@@ -196,19 +198,26 @@
       "question {{ (question.requiredLevel != null && question.requiredLevel <= dmp.level) ? "required" : "optional"}} {{ question.requiredLevel != null ? concat("phase-", question.requiredLevel) : "phase-none"}}"
   {%- endmacro -%}
   {% set path = path ~ "." ~ question.uuid %}
-  <div class={{questionClasses(question)}} id="{{path}}" data-uuid="{{question.uuid}}" data-type="question">
-    <h4 class="title">
-      <strong class="human-identifier">{{humanIdentifier}}</strong>
-      {{question.title}}
-    </h4>
-    <p class="text text-light">{{question.text|markdown}}</p>
-    <div class="extra-data">
-      {{renderTags(question.tagUuids)}}
-      {{renderReferences(question.referenceUuids)}}
-      {{renderExperts(question.ExpertUuids)}}
+  {% if question.answerValue or
+        question.answerOption or
+        question.items or
+        (question.title != "Data contact" and
+         question.title != "Responsible for Data Management Plan") %}
+
+    <div class={{questionClasses(question)}} id="{{path}}" data-uuid="{{question.uuid}}" data-type="question">
+      <h4 class="title">
+        <strong class="human-identifier">{{humanIdentifier}}</strong>
+        {{question.title}}
+      </h4>
+      <p class="text text-light">{{question.text|markdown}}</p>
+      <div class="extra-data">
+        {{renderTags(question.tagUuids)}}
+        {{renderReferences(question.referenceUuids)}}
+        {{renderExperts(question.ExpertUuids)}}
+      </div>
+      {{renderAnswer(question, humanIdentifier, path)}}
     </div>
-    {{renderAnswer(question, humanIdentifier, path)}}
-  </div>
+  {% endif %}
 {%- endmacro -%}
 
 {# --------------------------------------------------- #}
@@ -272,7 +281,7 @@
     }
   }
   {% endscript %}
-  {% if containsURLReference(referenceUuids) %}
+  {# {% if containsURLReference(referenceUuids) %}
     <div class="references references-url" >
       <svg aria-hidden="true" data-prefix="far" data-icon="external-link" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="svg-inline--fa fa-external-link fa-w-18 fa-2x"><path fill="currentColor" d="M576 14.4l-.174 163.2c0 7.953-6.447 14.4-14.4 14.4H528.12c-8.067 0-14.56-6.626-14.397-14.691l2.717-73.627-2.062-2.062-278.863 278.865c-4.686 4.686-12.284 4.686-16.971 0l-23.029-23.029c-4.686-4.686-4.686-12.284 0-16.971L474.379 61.621l-2.062-2.062-73.626 2.717C390.626 62.44 384 55.946 384 47.879V14.574c0-7.953 6.447-14.4 14.4-14.4L561.6 0c7.953 0 14.4 6.447 14.4 14.4zM427.515 233.74l-24 24a12.002 12.002 0 0 0-3.515 8.485V458a6 6 0 0 1-6 6H54a6 6 0 0 1-6-6V118a6 6 0 0 1 6-6h301.976c10.691 0 16.045-12.926 8.485-20.485l-24-24A12.002 12.002 0 0 0 331.976 64H48C21.49 64 0 85.49 0 112v352c0 26.51 21.49 48 48 48h352c26.51 0 48-21.49 48-48V242.225c0-10.691-12.926-16.045-20.485-8.485z" class=""></path></svg>
       <b>External Links:</b>
@@ -283,7 +292,7 @@
         {% endif %}
       {% endfor %}
     </div>
-  {% endif %}
+  {% endif %} #}
 {%- endmacro -%}
 
 {# --------------------------------------------------- #}
@@ -341,7 +350,7 @@
 {% macro renderAnswerValue(question, reply, humanIdentifier, path) -%}
   <div class="answer-block answer-simple" id="{{path}}" data-path="{{reply.path}}" data-type="answer">
     <p class="answer">
-      <svg aria-hidden="true" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg>
+      {# <svg aria-hidden="true" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg> #}
       {% if reply.value.type == "StringReply" %}
         <span>{{reply.value.value}}</span>
       {% else %}
@@ -371,7 +380,7 @@
   {% set humanIdentifier = humanIdentifier ~ "." ~ hi|ofAlphabet %}
   <div class="answer-block answer-option" id="{{path}}" data-path="{{reply.path}}" data-uuid="{{answer.uuid}}" data-type="answer">
     <p class="answer">
-      <svg aria-hidden="true" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg>
+      {# <svg aria-hidden="true" data-prefix="fas" data-icon="check" class="svg-inline--fa fa-check fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path></svg> #}
       <span>{{ hi|ofAlphabet }}. {{answer.label}}</span>
     </p>
     {% if answer.advice %}
@@ -429,7 +438,7 @@
   <head>
     <title>Data Management Plan</title>
     <meta charset="utf-8">
-    <style>{% include "root.css" %}</style>
+    <style>{% include "scilife_full.css" %}</style>
   </head>
   <body>
     <article class="dmp">
