@@ -1,5 +1,13 @@
 {
   "uuid": "70c09f78-85d7-11e9-8241-00163eba999d",
   "name": "SciLifeLab Full",
-  "rootFile": "scilife_full.html.j2"
+  "rootFile": "scilife_full.html.j2",
+  "allowedKMs": [
+    {
+      "orgId": null,
+      "kmId": null,
+      "minVersion": null,
+      "maxVersion": null
+    }
+  ]
 }

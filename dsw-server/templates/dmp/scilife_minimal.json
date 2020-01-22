@@ -1,5 +1,13 @@
 {
   "uuid": "8c964102-8d12-11e9-868b-9cb6d088be41",
   "name": "SciLifeLab Minimal",
-  "rootFile": "scilife_minimal.html.j2"
+  "rootFile": "scilife_minimal.html.j2",
+  "allowedKMs": [
+    {
+      "orgId": null,
+      "kmId": null,
+      "minVersion": null,
+      "maxVersion": null
+    }
+  ]
 }
